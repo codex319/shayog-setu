@@ -8,7 +8,7 @@ import {
   Send,
   AlertCircle,
 } from "lucide-react";
-
+import { classifyComplaint } from "../../services/mlService";
 export default function NewChallenge() {
   const navigate = useNavigate();
 
@@ -21,6 +21,7 @@ export default function NewChallenge() {
   });
 
   const [image, setImage] = useState(null);
+  const [isClassifying, setIsClassifying] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,7 +31,26 @@ export default function NewChallenge() {
       [name]: value,
     }));
   };
+const handleAutoDetect = async () => {
+  if (!form.title && !form.description) {
+    alert("Please enter a title or description first.");
+    return;
+  }
 
+  setIsClassifying(true);
+  try {
+    const result = await classifyComplaint(`${form.title} ${form.description}`);
+    setForm((prev) => ({
+      ...prev,
+      category: result.category,
+    }));
+  } catch (err) {
+    console.error("Classification failed:", err);
+    alert("Could not auto-detect category. Please select manually.");
+  } finally {
+    setIsClassifying(false);
+  }
+};
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -143,10 +163,22 @@ export default function NewChallenge() {
 
             {/* CATEGORY */}
             <div>
+            
 
-              <label className="block text-xs font-bold text-[#334155] mb-1.5">
-                Category
-              </label>
+             <div className="flex items-center justify-between mb-1.5">
+               <label className="block text-xs font-bold text-[#334155]">
+                 Category
+               </label>
+
+               <button
+                 type="button"
+                 onClick={handleAutoDetect}
+                 disabled={isClassifying}
+                 className="text-[10px] font-bold text-[#1E4D38] hover:underline disabled:opacity-50 cursor-pointer"
+               >
+                 {isClassifying ? "Detecting..." : "Auto-detect from text"}
+               </button>
+            </div>
 
               <select
                 name="category"
@@ -156,30 +188,15 @@ export default function NewChallenge() {
                 className="w-full px-3.5 py-3 rounded-xl bg-[#FAF8F2] border border-[#DDD6C5] text-sm outline-none cursor-pointer focus:border-[#1E4D38]"
               >
                 <option value="">Select category</option>
-                <option value="Water & Sanitation">
-                  Water & Sanitation
-                </option>
-                <option value="Roads & Transport">
-                  Roads & Transport
-                </option>
-                <option value="Electricity">
-                  Electricity
-                </option>
-                <option value="Healthcare">
-                  Healthcare
-                </option>
-                <option value="Education">
-                  Education
-                </option>
-                <option value="Environment">
-                  Environment
-                </option>
-                <option value="Public Safety">
-                  Public Safety
-                </option>
-                <option value="Other">
-                  Other
-                </option>
+                <option value="Water Quality & Sanitation">Water Quality & Sanitation</option>
+                <option value="Air & Environmental Pollution">Air & Environmental Pollution</option>
+                <option value="Public Health">Public Health</option>
+                <option value="Infrastructure & Roads">Infrastructure & Roads</option>
+                <option value="Education">Education</option>
+                <option value="Energy & Sustainability">Energy & Sustainability</option>
+                <option value="Waste Management">Waste Management</option>
+                <option value="Agriculture & Rural Development">Agriculture & Rural Development</option>
+                <option value="Safety & Public Welfare">Safety & Public Welfare</option>
               </select>
 
             </div>
