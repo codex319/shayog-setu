@@ -13,6 +13,7 @@ import CitizenLayout from "./layouts/CitizenLayout.jsx";
 import CitizenDashboard from "./pages/citizen/Dashboard.jsx";
 import NewChallenge from "./pages/citizen/NewChallenge.jsx";
 import CitizenChallenges from "./pages/citizen/Challenges.jsx";
+import CitizenChallengeDetail from "./pages/citizen/ChallengeDetail.jsx";
 
 import GovernmentLayout from "./layouts/GovernmentLayout.jsx";
 import GovernmentDashboard from "./pages/government/Dashboard.jsx";
@@ -50,6 +51,7 @@ export default function App() {
         <Route path="dashboard" element={<CitizenDashboard />} />
         <Route path="challenges/new" element={<NewChallenge />} />
         <Route path="challenges" element={<CitizenChallenges />} />
+        <Route path="challenges/:id" element={<CitizenChallengeDetail />} />
       </Route>
 
       <Route
