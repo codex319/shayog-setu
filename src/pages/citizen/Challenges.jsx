@@ -218,12 +218,12 @@ export default function Challenges() {
             >
 
               {/* Image */}
-              {problem.image ? (
+              {problem.evidenceimage ? (
 
                 <div className="h-40 overflow-hidden bg-[#F4F1E8]">
 
                   <img
-                    src={problem.image}
+                    src={problem.evidenceimage}
                     alt={problem.title}
                     className="w-full h-full object-cover"
                   />

@@ -112,10 +112,10 @@ export default function ChallengeDetail() {
 
           {/* Hero / Image */}
           <div className="overflow-hidden rounded-3xl border border-[#E5E0D2] bg-white shadow-sm">
-            {problem.image ? (
+            {problem.evidenceimage ? (
               <div className="h-64 overflow-hidden bg-[#F4F1E8] sm:h-80 lg:h-[390px]">
                 <img
-                  src={problem.image}
+                  src={problem.evidenceimage}
                   alt={problem.title || "Community challenge"}
                   className="h-full w-full object-cover"
                 />
