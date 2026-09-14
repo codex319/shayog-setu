@@ -25,13 +25,7 @@ export default function Dashboard() {
   const rec = MOCK_STUDENT_RECOMMENDATION;
   const project = MOCK_PROJECT_TEAM;
 
-  const skillsData = [
-    { name: "AI/ML", pct: 90, color: "#3B82F6" },
-    { name: "Web Dev", pct: 78, color: "#10B981" },
-    { name: "IoT", pct: 60, color: "#06B6D4" },
-    { name: "Python", pct: 60, color: "#F59E0B" },
-    { name: "Data Analysis", pct: 50, color: "#EC4899" },
-  ];
+ 
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
@@ -81,10 +75,10 @@ export default function Dashboard() {
       </div>
 
       {/* Recommended + Skills */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 ">
 
         {/* Recommended Challenge */}
-        <div className="lg:col-span-8 bg-gradient-to-br from-[#FAF8F2] to-white rounded-3xl border border-[#E5E0D2] p-6 shadow-xs flex flex-col justify-between">
+        <div className="lg:col-span-12 bg-gradient-to-br from-[#FAF8F2] to-white rounded-3xl border border-[#E5E0D2] p-6 shadow-xs flex flex-col justify-between">
 
           <div>
             <div className="flex items-center justify-between gap-2 mb-3">
@@ -164,56 +158,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Skills */}
-        <div className="lg:col-span-4 bg-white rounded-3xl border border-[#E5E0D2] p-6 shadow-xs flex flex-col justify-between">
-
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-[#1C241E] flex items-center gap-1.5">
-                <Award className="w-4 h-4 text-[#1E4D38]" />
-                Your Skills Distribution
-              </h3>
-
-              <span className="text-xs font-semibold text-[#64748B]">
-                6 Verified
-              </span>
-            </div>
-
-            <div className="space-y-3">
-              {skillsData.map((skill) => (
-                <div key={skill.name}>
-                  <div className="flex items-center justify-between text-xs font-semibold mb-1">
-                    <span className="text-[#334155]">
-                      {skill.name}
-                    </span>
-
-                    <span className="text-[#64748B]">
-                      {skill.pct}%
-                    </span>
-                  </div>
-
-                  <div className="w-full h-2 rounded-full bg-[#F1EFE7] overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-500"
-                      style={{
-                        width: `${skill.pct}%`,
-                        backgroundColor: skill.color,
-                      }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-6 pt-3 border-t border-[#F0EBE0] flex items-center justify-between text-xs text-[#556458]">
-            <span>Based on GitHub & Coursework</span>
-
-            <button className="font-bold text-[#1E4D38] hover:underline cursor-pointer">
-              Update Skills
-            </button>
-          </div>
-        </div>
+       
       </div>
 
       {/* Active Project */}

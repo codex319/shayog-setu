@@ -102,6 +102,17 @@ export default function CitizenLayout() {
             </button>
 
             <button
+              onClick={() => navigate("/citizen/mychallenges")}
+              className={`px-3 py-1.5 rounded-lg transition-all ${
+                isActive("/citizen/mychallenges")
+                  ? "text-[#1E4D38] bg-[#EBF3EE] font-bold border border-[#C5DACD]"
+                  : "hover:text-[#1C241E] hover:bg-[#F2EFE5]"
+              }`}
+            >
+             My Challenges
+            </button>
+
+             <button
               onClick={() => navigate("/citizen/challenges")}
               className={`px-3 py-1.5 rounded-lg transition-all ${
                 isActive("/citizen/challenges")
@@ -109,7 +120,7 @@ export default function CitizenLayout() {
                   : "hover:text-[#1C241E] hover:bg-[#F2EFE5]"
               }`}
             >
-              Challenges
+            Challenges
             </button>
 
             <button
