@@ -1,6 +1,7 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import createChallenge from "../../api/challengeApi";
 import {
   ArrowLeft,
   MapPin,
@@ -31,16 +32,19 @@ export default function NewChallenge() {
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    console.log("Problem submitted:", {
-      ...form,
-      image,
-    });
-
-    navigate("/citizen/challenges");
-  };
+  try {
+    const response = await createChallenge(form, image);
+      navigate("/citizen/challenges");
+  } catch (error) {
+    console.error(
+      "Failed to submit challenge:",
+      error.response?.data || error.message
+    );
+  }
+};
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
@@ -317,13 +321,14 @@ export default function NewChallenge() {
             Cancel
           </button>
 
-          <button
-            type="submit"
-            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#1E4D38] hover:bg-[#163B2A] text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
-          >
-            <Send className="w-3.5 h-3.5" />
-            Submit Problem
-          </button>
+        <button
+              type="submit"
+              onClick={() => console.log("SUBMIT BUTTON CLICKED")}
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#1E4D38] hover:bg-[#163B2A] text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
+            >
+              <Send className="w-3.5 h-3.5" />
+              Submit Problem
+        </button>
 
         </div>
 

@@ -1,6 +1,8 @@
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+
 import { useNavigate } from "react-router-dom";
+import { getAllChallenges } from "../../api/challengeApi";
 import {
   Search,
   MapPin,
@@ -12,11 +14,32 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-import { useProblems } from "../../context/ProblemsContext.jsx";
+   
 
-export default function Challenges() {
+   export default function Challenges() {
   const navigate = useNavigate();
-  const { problems = [] } = useProblems();
+
+  const [problems, setProblems] = useState([]);
+
+  useEffect(() => {
+    const fetchChallenges = async () => {
+      try {
+        const response = await getAllChallenges();
+
+      
+
+        setProblems(response.list || []);
+      } catch (error) {
+        console.error(
+          "Failed to fetch challenges:",
+          error.response?.data || error.message
+        );
+      }
+    };
+
+    fetchChallenges();
+  }, []);
+
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
@@ -218,12 +241,12 @@ export default function Challenges() {
             >
 
               {/* Image */}
-              {problem.evidenceimage ? (
+              {problem.media?.[0]?.url ? (
 
                 <div className="h-40 overflow-hidden bg-[#F4F1E8]">
 
                   <img
-                    src={problem.evidenceimage}
+                    src={problem.media[0].url}
                     alt={problem.title}
                     className="w-full h-full object-cover"
                   />
