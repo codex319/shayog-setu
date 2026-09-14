@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-[#FAFAF7] text-ink antialiased;
+}
+
+h1, h2, h3, .font-editorial {
+    font-family: 'Lora', Georgia, serif;
+  }
+
+::selection {
+  background: #C6822A;
+  color: #FAFAF7;
+}
+
+.focus-ring {
+  @apply outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#C6822A];
+}
