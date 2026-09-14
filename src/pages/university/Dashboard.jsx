@@ -73,94 +73,8 @@ export default function Dashboard() {
           </button>
         </div>
       </div>
-
-      {/* Recommended + Skills */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 ">
-
-        {/* Recommended Challenge */}
-        <div className="lg:col-span-12 bg-gradient-to-br from-[#FAF8F2] to-white rounded-3xl border border-[#E5E0D2] p-6 shadow-xs flex flex-col justify-between">
-
-          <div>
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#1E4D38] flex items-center gap-1">
-                <Sparkles className="w-4 h-4 text-emerald-600" />
-                Recommended for You
-              </span>
-
-              <span className="px-2.5 py-1 rounded-full bg-[#1E4D38] text-white text-xs font-bold shadow-xs">
-                {rec.matchScore}% Match
-              </span>
-            </div>
-
-            <h2 className="text-xl font-bold text-[#1C241E] font-editorial leading-snug">
-              {rec.problem.title}
-            </h2>
-
-            <p className="text-xs text-[#556458] mt-1.5 leading-relaxed">
-              {rec.problem.description}
-            </p>
-
-            {/* Why this matches */}
-            <div className="mt-4 p-3 rounded-xl bg-[#F4F1E6] border border-[#E0DACB] space-y-1 text-xs">
-              <div className="font-bold text-[#1C241E] text-[11px] mb-1">
-                Why this matches your profile / मिलान का आधार:
-              </div>
-
-              {rec.reasons.map((reason, index) => (
-                <div
-                  key={index}
-                  className="flex items-start gap-1.5 text-[11px] text-[#475569]"
-                >
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                  <span>{reason}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Skills + Location */}
-            <div className="mt-4 flex items-center justify-between flex-wrap gap-2 pt-3 border-t border-[#EBE6DA]">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                {rec.matchedSkills.map((skill) => (
-                  <span
-                    key={skill}
-                    className="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-[#EBF3EE] text-[#1E4D38] border border-[#C5DACD]"
-                  >
-                    ✓ {skill}
-                  </span>
-                ))}
-              </div>
-
-              <div className="text-xs text-[#64748B] flex items-center gap-2">
-                <span className="flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-amber-700" />
-                  {rec.problem.district}
-                </span>
-
-                <span>•</span>
-
-                <span>
-                  👥 {rec.problem.affectedPopulation}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-5 flex items-center justify-end">
-            <button
-              onClick={() =>
-                navigate(`/university/challenges`)
-              }
-              className="bg-[#1E4D38] hover:bg-[#163B2A] text-white text-xs font-bold px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
-            >
-              <span>View Challenge Details</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-
-       
-      </div>
-
++
+     
       {/* Active Project */}
       <div className="bg-white rounded-3xl border border-[#E5E0D2] p-6 shadow-xs">
 
@@ -251,55 +165,10 @@ export default function Dashboard() {
       </div>
 
       {/* Bottom Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="flex flex-col gap-6">
 
-        {/* Upcoming Milestones */}
-        <div className="bg-white rounded-3xl border border-[#E5E0D2] p-5 shadow-xs">
-
-          <h3 className="text-xs font-bold uppercase tracking-wider text-[#1C241E] mb-3 flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5 text-[#1E4D38]" />
-            Upcoming Milestones
-          </h3>
-
-          <div className="space-y-3">
-            {[
-              {
-                date: "25 Apr",
-                title: "Latehar Field Soil Testing",
-                status: "Upcoming",
-              },
-              {
-                date: "10 May",
-                title: "Panchayat Verification Signoff",
-                status: "Pending",
-              },
-              {
-                date: "20 May",
-                title: "Full Village Pilot Rollout",
-                status: "Pending",
-              },
-            ].map((milestone, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF8F2] border border-[#EBE6DA] text-xs"
-              >
-                <div>
-                  <span className="font-bold text-[#1C241E] block">
-                    {milestone.title}
-                  </span>
-
-                  <span className="text-[10px] text-[#64748B]">
-                    {milestone.status}
-                  </span>
-                </div>
-
-                <span className="px-2 py-0.5 rounded bg-white text-[#1E4D38] font-mono text-[11px] font-bold border border-[#DDD6C5]">
-                  {milestone.date}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+        
+        
 
         {/* Recent Activity */}
         <div className="bg-white rounded-3xl border border-[#E5E0D2] p-5 shadow-xs">

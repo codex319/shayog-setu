@@ -1,7 +1,15 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+
+import api from "../api/axios.js";
 
 const AuthContext = createContext(null);
-const STORAGE_KEY = "samadhan_setu_user";
+
+const TOKEN_KEY = "samadhan_setu_token";
 
 const roleHomeMap = {
   citizen: "/citizen/dashboard",
@@ -13,65 +21,134 @@ const roleHomeMap = {
   admin: "/admin/dashboard",
 };
 
+
 export function AuthProvider({ children }) {
+
   const [user, setUser] = useState(null);
+
   const [loading, setLoading] = useState(true);
 
+
+  // ===============================
+  // RESTORE LOGIN
+  // ===============================
+
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        setUser(JSON.parse(stored));
-      } catch {
-        localStorage.removeItem(STORAGE_KEY);
-      }
+
+    const token = localStorage.getItem(TOKEN_KEY);
+
+    if (!token) {
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+
+    api
+      .get("/auth/me")
+      .then((res) => {
+        setUser(res.data.user);
+      })
+      .catch(() => {
+        localStorage.removeItem(TOKEN_KEY);
+        setUser(null);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+
   }, []);
 
-  const login = ({ name, email, role }) => {
-    const mockUser = {
-      id: `usr_${Date.now()}`,
-      name: name?.trim() || defaultNameForRole(role),
+
+  // ===============================
+  // LOGIN
+  // ===============================
+
+  const login = async (email, password) => {
+
+    const res = await api.post("/auth/login", {
       email,
-      role,
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(mockUser));
-    setUser(mockUser);
-    return mockUser;
+      password,
+    });
+
+    const { token, user } = res.data;
+
+    localStorage.setItem(TOKEN_KEY, token);
+
+    setUser(user);
+
+    return user;
   };
 
+
+  // ===============================
+  // REGISTER
+  // ===============================
+
+  const register = async (
+    name,
+    email,
+    password,
+    role
+  ) => {
+
+    const res = await api.post("/auth/register", {
+      name,
+      email,
+      password,
+      role,
+    });
+
+    const { token, user } = res.data;
+
+    localStorage.setItem(TOKEN_KEY, token);
+
+    setUser(user);
+
+    return user;
+  };
+
+
+  // ===============================
+  // LOGOUT
+  // ===============================
+
   const logout = () => {
-    localStorage.removeItem(STORAGE_KEY);
+
+    localStorage.removeItem(TOKEN_KEY);
+
     setUser(null);
   };
 
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        register,
+        logout,
+        loading,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
 
-function defaultNameForRole(role) {
-  const map = {
-    citizen: "Anaya Kumari",
-    government: "Officer R. Prasad",
-    university: "Dr. Meera Singh",
-    faculty: "Dr. Meera Singh",
-    student: "Rohan Verma",
-    industry: "Priya Mehta",
-    admin: "System Admin",
-  };
-  return map[role] || "Demo User";
-}
 
 export function homeRouteForRole(role) {
   return roleHomeMap[role] || "/";
 }
 
+
 export function useAuth() {
+
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+
+  if (!ctx) {
+    throw new Error(
+      "useAuth must be used within AuthProvider"
+    );
+  }
+
   return ctx;
 }

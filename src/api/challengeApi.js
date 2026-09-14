@@ -1,9 +1,6 @@
+import api from "./axios";
 
-import axios from "axios";
-
-
-
-const createChallenge = async (payload, image) => {
+export const createChallenge = async (payload, image) => {
   const formData = new FormData();
 
   formData.append("title", payload.title);
@@ -16,24 +13,17 @@ const createChallenge = async (payload, image) => {
     formData.append("image", image);
   }
 
-  const res = await axios.post(
-    "http://localhost:3000/api/challenges",
-    formData
-  );
-
+  const res = await api.post("/challenges", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
 
   return res.data;
 };
-
-
-
 
 export const getAllChallenges = async () => {
-  const res = await axios.get("http://localhost:3000/api/challenges");
+  const res = await api.get("/challenges");
 
   return res.data;
 };
-
-export default createChallenge;
-
-

@@ -4,32 +4,22 @@ import {
   ArrowLeft,
   ArrowRight,
   Mail,
-  User,
   ShieldCheck,
-  ChevronDown,
 } from "lucide-react";
-import { useAuth, homeRouteForRole } from "../context/AuthContext.jsx";
 
-const roles = [
-  { value: "citizen", label: "Citizen" },
-  { value: "government", label: "Government Officer" },
-  
-  { value: "student", label: "Student" },
-  { value: "industry", label: "Industry / Startup / CSR" },
-  { value: "admin", label: "System Admin" },
-];
+import { useAuth, homeRouteForRole } from "../context/AuthContext.jsx";
 
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    name: "",
     email: "",
-    role: "citizen",
+    password: "",
   });
 
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setForm((current) => ({
@@ -40,21 +30,41 @@ export default function LoginPage() {
     setError("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    setError("");
+    setLoading(true);
 
     if (!form.email.trim()) {
       setError("Please enter your email address.");
+      setLoading(false);
       return;
     }
 
-    const user = login({
-      name: form.name,
-      email: form.email.trim(),
-      role: form.role,
-    });
+    if (!form.password) {
+      setError("Please enter your password.");
+      setLoading(false);
+      return;
+    }
 
-    navigate(homeRouteForRole(user.role), { replace: true });
+    try {
+      const user = await login(
+        form.email.trim(),
+        form.password
+      );
+
+      navigate(homeRouteForRole(user.role), {
+        replace: true,
+      });
+    } catch (error) {
+      setError(
+        error.response?.data?.message ||
+          "Login failed. Please check your email and password."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -102,6 +112,7 @@ export default function LoginPage() {
 
           {/* Right panel */}
           <div className="p-6 sm:p-10 xl:p-14">
+
             {/* Mobile back button */}
             <Link
               to="/"
@@ -122,59 +133,12 @@ export default function LoginPage() {
                 </h2>
 
                 <p className="mt-3 text-sm leading-6 text-[#68736B]">
-                  Choose your role and enter your details to explore the
-                  Samadhan Setu portal.
+                  Enter your email and password to access the Samadhan Setu
+                  portal.
                 </p>
               </div>
 
-              {/* Demo notice */}
-              <div className="mt-6 rounded-xl border border-[#E6E1D3] bg-[#F8F6EE] p-4">
-                <div className="flex gap-3">
-                  <ShieldCheck
-                    size={19}
-                    className="mt-0.5 shrink-0 text-[#1E4D38]"
-                  />
-
-                  <div>
-                    <p className="text-sm font-semibold text-[#1C241E]">
-                      Demo login
-                    </p>
-
-                    <p className="mt-1 text-xs leading-5 text-[#6D776F]">
-                      No password is required. Select any role below to explore
-                      that portal.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
               <form onSubmit={handleSubmit} className="mt-7 space-y-5">
-                {/* Name */}
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="mb-2 block text-sm font-semibold text-[#35423A]"
-                  >
-                    Full name
-                  </label>
-
-                  <div className="relative">
-                    <User
-                      size={18}
-                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8A938D]"
-                    />
-
-                    <input
-                      id="name"
-                      name="name"
-                      type="text"
-                      value={form.name}
-                      onChange={handleChange}
-                      placeholder="e.g. Anaya Kumari"
-                      className="w-full rounded-xl border border-[#DDD6C5] bg-[#FCFBF7] py-3 pl-11 pr-4 text-sm text-[#1C241E] outline-none transition placeholder:text-[#9AA19B] focus:border-[#1E4D38] focus:ring-2 focus:ring-[#1E4D38]/10"
-                    />
-                  </div>
-                </div>
 
                 {/* Email */}
                 <div>
@@ -204,35 +168,25 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                {/* Role */}
+                {/* Password */}
                 <div>
                   <label
-                    htmlFor="role"
+                    htmlFor="password"
                     className="mb-2 block text-sm font-semibold text-[#35423A]"
                   >
-                    Log in as
+                    Password
                   </label>
 
-                  <div className="relative">
-                    <select
-                      id="role"
-                      name="role"
-                      value={form.role}
-                      onChange={handleChange}
-                      className="w-full appearance-none rounded-xl border border-[#DDD6C5] bg-[#FCFBF7] px-4 py-3 pr-11 text-sm text-[#1C241E] outline-none transition focus:border-[#1E4D38] focus:ring-2 focus:ring-[#1E4D38]/10"
-                    >
-                      {roles.map((role) => (
-                        <option key={role.value} value={role.value}>
-                          {role.label}
-                        </option>
-                      ))}
-                    </select>
-
-                    <ChevronDown
-                      size={18}
-                      className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#7A847D]"
-                    />
-                  </div>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    value={form.password}
+                    onChange={handleChange}
+                    placeholder="Enter your password"
+                    className="w-full rounded-xl border border-[#DDD6C5] bg-[#FCFBF7] px-4 py-3 text-sm text-[#1C241E] outline-none transition placeholder:text-[#9AA19B] focus:border-[#1E4D38] focus:ring-2 focus:ring-[#1E4D38]/10"
+                  />
                 </div>
 
                 {/* Error */}
@@ -245,14 +199,17 @@ export default function LoginPage() {
                 {/* Submit */}
                 <button
                   type="submit"
-                  className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[#1E4D38] px-5 py-3.5 text-sm font-bold text-white transition hover:bg-[#163B2A] focus:outline-none focus:ring-2 focus:ring-[#1E4D38] focus:ring-offset-2"
+                  disabled={loading}
+                  className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[#1E4D38] px-5 py-3.5 text-sm font-bold text-white transition hover:bg-[#163B2A] focus:outline-none focus:ring-2 focus:ring-[#1E4D38] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Continue
+                  {loading ? "Logging in..." : "Continue"}
 
-                  <ArrowRight
-                    size={17}
-                    className="transition-transform group-hover:translate-x-1"
-                  />
+                  {!loading && (
+                    <ArrowRight
+                      size={17}
+                      className="transition-transform group-hover:translate-x-1"
+                    />
+                  )}
                 </button>
               </form>
 
@@ -273,8 +230,8 @@ export default function LoginPage() {
               </p>
 
               <p className="mt-8 text-center text-xs leading-5 text-[#8A938D]">
-                By continuing, you are using the demonstration version of
-                Samadhan Setu.
+                By continuing, you agree to use Samadhan Setu securely and
+                responsibly.
               </p>
             </div>
           </div>

@@ -9,28 +9,30 @@ import {
   ChevronDown,
   CheckCircle2,
 } from "lucide-react";
+
 import { useAuth, homeRouteForRole } from "../context/AuthContext.jsx";
 
 const roles = [
   { value: "citizen", label: "Citizen" },
   { value: "government", label: "Government Officer" },
-  { value: "university", label: "University Admin" },
-  { value: "faculty", label: "Faculty" },
-  { value: "student", label: "Student" },
+  { value: "student", label: "Student/Faculty" },
   { value: "industry", label: "Industry / Startup / CSR" },
 ];
 
 export default function RegisterPage() {
-  const { login } = useAuth();
+  const { register } = useAuth();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
     name: "",
     email: "",
+    password: "",
+    confirmPassword: "",
     role: "citizen",
   });
 
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setForm((current) => ({
@@ -41,26 +43,61 @@ export default function RegisterPage() {
     setError("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    setError("");
+    setLoading(true);
 
     if (!form.name.trim()) {
       setError("Please enter your full name.");
+      setLoading(false);
       return;
     }
 
     if (!form.email.trim()) {
       setError("Please enter your email address.");
+      setLoading(false);
       return;
     }
 
-    const user = login({
-      name: form.name.trim(),
-      email: form.email.trim(),
-      role: form.role,
-    });
+    if (!form.password) {
+      setError("Please enter a password.");
+      setLoading(false);
+      return;
+    }
 
-    navigate(homeRouteForRole(user.role), { replace: true });
+    if (form.password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      setLoading(false);
+      return;
+    }
+
+    if (form.password !== form.confirmPassword) {
+      setError("Passwords do not match.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const user = await register(
+        form.name.trim(),
+        form.email.trim(),
+        form.password,
+        form.role
+      );
+
+      navigate(homeRouteForRole(user.role), {
+        replace: true,
+      });
+    } catch (error) {
+      setError(
+        error.response?.data?.message ||
+          "Registration failed. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -120,6 +157,7 @@ export default function RegisterPage() {
 
           {/* Right panel */}
           <div className="p-6 sm:p-10 xl:p-14">
+
             {/* Mobile back button */}
             <Link
               to="/"
@@ -145,28 +183,8 @@ export default function RegisterPage() {
                 </p>
               </div>
 
-              {/* Demo notice */}
-              <div className="mt-6 rounded-xl border border-[#E6E1D3] bg-[#F8F6EE] p-4">
-                <div className="flex gap-3">
-                  <ShieldCheck
-                    size={19}
-                    className="mt-0.5 shrink-0 text-[#1E4D38]"
-                  />
-
-                  <div>
-                    <p className="text-sm font-semibold text-[#1C241E]">
-                      Demo registration
-                    </p>
-
-                    <p className="mt-1 text-xs leading-5 text-[#6D776F]">
-                      This demonstration does not require a password or email
-                      verification.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
               <form onSubmit={handleSubmit} className="mt-7 space-y-5">
+
                 {/* Full name */}
                 <div>
                   <label
@@ -223,6 +241,48 @@ export default function RegisterPage() {
                   </div>
                 </div>
 
+                {/* Password */}
+                <div>
+                  <label
+                    htmlFor="password"
+                    className="mb-2 block text-sm font-semibold text-[#35423A]"
+                  >
+                    Password
+                  </label>
+
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    value={form.password}
+                    onChange={handleChange}
+                    placeholder="Enter your password"
+                    className="w-full rounded-xl border border-[#DDD6C5] bg-[#FCFBF7] px-4 py-3 text-sm text-[#1C241E] outline-none transition placeholder:text-[#9AA19B] focus:border-[#1E4D38] focus:ring-2 focus:ring-[#1E4D38]/10"
+                  />
+                </div>
+
+                {/* Confirm password */}
+                <div>
+                  <label
+                    htmlFor="confirmPassword"
+                    className="mb-2 block text-sm font-semibold text-[#35423A]"
+                  >
+                    Confirm password
+                  </label>
+
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    required
+                    value={form.confirmPassword}
+                    onChange={handleChange}
+                    placeholder="Re-enter your password"
+                    className="w-full rounded-xl border border-[#DDD6C5] bg-[#FCFBF7] px-4 py-3 text-sm text-[#1C241E] outline-none transition placeholder:text-[#9AA19B] focus:border-[#1E4D38] focus:ring-2 focus:ring-[#1E4D38]/10"
+                  />
+                </div>
+
                 {/* Role */}
                 <div>
                   <label
@@ -264,14 +324,17 @@ export default function RegisterPage() {
                 {/* Submit */}
                 <button
                   type="submit"
-                  className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[#1E4D38] px-5 py-3.5 text-sm font-bold text-white transition hover:bg-[#163B2A] focus:outline-none focus:ring-2 focus:ring-[#1E4D38] focus:ring-offset-2"
+                  disabled={loading}
+                  className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[#1E4D38] px-5 py-3.5 text-sm font-bold text-white transition hover:bg-[#163B2A] focus:outline-none focus:ring-2 focus:ring-[#1E4D38] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Create account
+                  {loading ? "Creating account..." : "Create account"}
 
-                  <ArrowRight
-                    size={17}
-                    className="transition-transform group-hover:translate-x-1"
-                  />
+                  {!loading && (
+                    <ArrowRight
+                      size={17}
+                      className="transition-transform group-hover:translate-x-1"
+                    />
+                  )}
                 </button>
               </form>
 
@@ -292,8 +355,8 @@ export default function RegisterPage() {
               </p>
 
               <p className="mt-8 text-center text-xs leading-5 text-[#8A938D]">
-                By creating an account, you are using the demonstration version
-                of Samadhan Setu.
+                By creating an account, you agree to use Samadhan Setu
+                securely and responsibly.
               </p>
             </div>
           </div>
