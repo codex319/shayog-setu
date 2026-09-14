@@ -1,12 +1,7 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-<<<<<<< HEAD
 import { createChallenge } from "../../api/challengeApi";
-=======
-import createChallenge from "../../api/challengeApi";
-
->>>>>>> 1517a43823615c01403c69246a86a511b6528f0e
 
 import {
   ArrowLeft,
