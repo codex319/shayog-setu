@@ -1,15 +1,7 @@
-<<<<<<< HEAD
-export const createChallenge = async (payload) => {
-  const res = await api.post("/challenges", {
-    title: payload.title,
-    description: payload.description,
-    category: payload.category,
-    district: payload.district,
-    location: payload.location,
-  });
-=======
 
 import axios from "axios";
+
+
 
 const createChallenge = async (payload, image) => {
   const formData = new FormData();
@@ -28,14 +20,14 @@ const createChallenge = async (payload, image) => {
     "http://localhost:3000/api/challenges",
     formData
   );
->>>>>>> 198fb6fb86f50a902a81359f78e7c16bafbfedc9
+
 
   return res.data;
 };
 
-<<<<<<< HEAD
-export default createChallenge;
-=======
+
+
+
 export const getAllChallenges = async () => {
   const res = await axios.get("http://localhost:3000/api/challenges");
 
@@ -44,4 +36,4 @@ export const getAllChallenges = async () => {
 
 export default createChallenge;
 
->>>>>>> 198fb6fb86f50a902a81359f78e7c16bafbfedc9
+

@@ -1,7 +1,8 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import createChallenge from "../../api/challengeApi";
+
+
 import {
   ArrowLeft,
   MapPin,
@@ -9,7 +10,9 @@ import {
   Send,
   AlertCircle,
 } from "lucide-react";
+
 import { classifyComplaint } from "../../services/mlService";
+
 export default function NewChallenge() {
   const navigate = useNavigate();
 
@@ -24,6 +27,7 @@ export default function NewChallenge() {
   const [image, setImage] = useState(null);
   const [isClassifying, setIsClassifying] = useState(false);
 
+  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -32,49 +36,55 @@ export default function NewChallenge() {
       [name]: value,
     }));
   };
-const handleAutoDetect = async () => {
-  if (!form.title && !form.description) {
-    alert("Please enter a title or description first.");
-    return;
-  }
 
-<<<<<<< HEAD
+  // Auto detect category using ML service
+  const handleAutoDetect = async () => {
+    if (!form.title && !form.description) {
+      alert("Please enter a title or description first.");
+      return;
+    }
+
+    setIsClassifying(true);
+
+    try {
+      const result = await classifyComplaint(
+        `${form.title} ${form.description}`
+      );
+
+      setForm((prev) => ({
+        ...prev,
+        category: result.category,
+      }));
+    } catch (err) {
+      console.error("Classification failed:", err);
+      alert("Could not auto-detect category. Please select manually.");
+    } finally {
+      setIsClassifying(false);
+    }
+  };
+
+  // Submit challenge
   const handleSubmit = async (e) => {
-  e.preventDefault();
-=======
-  setIsClassifying(true);
-  try {
-    const result = await classifyComplaint(`${form.title} ${form.description}`);
-    setForm((prev) => ({
-      ...prev,
-      category: result.category,
-    }));
-  } catch (err) {
-    console.error("Classification failed:", err);
-    alert("Could not auto-detect category. Please select manually.");
-  } finally {
-    setIsClassifying(false);
-  }
-};
-  const handleSubmit = (e) => {
     e.preventDefault();
->>>>>>> 6ec88e5198d1a2ef8b1ec92deff7d7bbff8994b1
 
-  try {
-    const response = await createChallenge(form, image);
+    try {
+      const response = await createChallenge(form, image);
+
+      console.log("Challenge submitted:", response);
+
       navigate("/citizen/challenges");
-  } catch (error) {
-    console.error(
-      "Failed to submit challenge:",
-      error.response?.data || error.message
-    );
-  }
-};
+    } catch (error) {
+      console.error(
+        "Failed to submit challenge:",
+        error.response?.data || error.message
+      );
+    }
+  };
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
 
-      {/* ================= HEADER ================= */}
+      {/* HEADER */}
       <div className="mb-6">
 
         <button
@@ -101,11 +111,9 @@ const handleAutoDetect = async () => {
           </p>
 
         </div>
-
       </div>
 
-
-      {/* ================= FORM ================= */}
+      {/* FORM */}
       <form
         onSubmit={handleSubmit}
         className="bg-white rounded-3xl border border-[#E5E0D2] shadow-xs overflow-hidden"
@@ -123,7 +131,6 @@ const handleAutoDetect = async () => {
           </p>
 
         </div>
-
 
         <div className="p-6 space-y-5">
 
@@ -146,7 +153,6 @@ const handleAutoDetect = async () => {
 
           </div>
 
-
           {/* DESCRIPTION */}
           <div>
 
@@ -166,28 +172,30 @@ const handleAutoDetect = async () => {
 
           </div>
 
-
           {/* CATEGORY + DISTRICT */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
             {/* CATEGORY */}
             <div>
-            
 
-             <div className="flex items-center justify-between mb-1.5">
-               <label className="block text-xs font-bold text-[#334155]">
-                 Category
-               </label>
+              <div className="flex items-center justify-between mb-1.5">
 
-               <button
-                 type="button"
-                 onClick={handleAutoDetect}
-                 disabled={isClassifying}
-                 className="text-[10px] font-bold text-[#1E4D38] hover:underline disabled:opacity-50 cursor-pointer"
-               >
-                 {isClassifying ? "Detecting..." : "Auto-detect from text"}
-               </button>
-            </div>
+                <label className="block text-xs font-bold text-[#334155]">
+                  Category
+                </label>
+
+                <button
+                  type="button"
+                  onClick={handleAutoDetect}
+                  disabled={isClassifying}
+                  className="text-[10px] font-bold text-[#1E4D38] hover:underline disabled:opacity-50 cursor-pointer"
+                >
+                  {isClassifying
+                    ? "Detecting..."
+                    : "Auto-detect from text"}
+                </button>
+
+              </div>
 
               <select
                 name="category"
@@ -197,19 +205,36 @@ const handleAutoDetect = async () => {
                 className="w-full px-3.5 py-3 rounded-xl bg-[#FAF8F2] border border-[#DDD6C5] text-sm outline-none cursor-pointer focus:border-[#1E4D38]"
               >
                 <option value="">Select category</option>
-                <option value="Water Quality & Sanitation">Water Quality & Sanitation</option>
-                <option value="Air & Environmental Pollution">Air & Environmental Pollution</option>
-                <option value="Public Health">Public Health</option>
-                <option value="Infrastructure & Roads">Infrastructure & Roads</option>
-                <option value="Education">Education</option>
-                <option value="Energy & Sustainability">Energy & Sustainability</option>
-                <option value="Waste Management">Waste Management</option>
-                <option value="Agriculture & Rural Development">Agriculture & Rural Development</option>
-                <option value="Safety & Public Welfare">Safety & Public Welfare</option>
+                <option value="Water Quality & Sanitation">
+                  Water Quality & Sanitation
+                </option>
+                <option value="Air & Environmental Pollution">
+                  Air & Environmental Pollution
+                </option>
+                <option value="Public Health">
+                  Public Health
+                </option>
+                <option value="Infrastructure & Roads">
+                  Infrastructure & Roads
+                </option>
+                <option value="Education">
+                  Education
+                </option>
+                <option value="Energy & Sustainability">
+                  Energy & Sustainability
+                </option>
+                <option value="Waste Management">
+                  Waste Management
+                </option>
+                <option value="Agriculture & Rural Development">
+                  Agriculture & Rural Development
+                </option>
+                <option value="Safety & Public Welfare">
+                  Safety & Public Welfare
+                </option>
               </select>
 
             </div>
-
 
             {/* DISTRICT */}
             <div>
@@ -234,13 +259,12 @@ const handleAutoDetect = async () => {
                 <option value="Deoghar">Deoghar</option>
                 <option value="Giridih">Giridih</option>
                 <option value="Palamu">Palamu</option>
-                <option value="Basti">Other</option>
+                <option value="Other">Other</option>
               </select>
 
             </div>
 
           </div>
-
 
           {/* LOCATION */}
           <div>
@@ -266,7 +290,6 @@ const handleAutoDetect = async () => {
             </div>
 
           </div>
-
 
           {/* IMAGE */}
           <div>
@@ -294,7 +317,9 @@ const handleAutoDetect = async () => {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={(e) => setImage(e.target.files?.[0] || null)}
+                onChange={(e) =>
+                  setImage(e.target.files?.[0] || null)
+                }
               />
 
             </label>
@@ -306,7 +331,6 @@ const handleAutoDetect = async () => {
             )}
 
           </div>
-
 
           {/* NOTICE */}
           <div className="flex gap-3 p-4 rounded-2xl bg-[#FFFBEB] border border-[#FDE68A]">
@@ -331,7 +355,6 @@ const handleAutoDetect = async () => {
 
         </div>
 
-
         {/* FOOTER */}
         <div className="px-6 py-5 bg-[#FAF8F2] border-t border-[#F0EBE0] flex flex-col sm:flex-row items-center justify-end gap-3">
 
@@ -343,14 +366,13 @@ const handleAutoDetect = async () => {
             Cancel
           </button>
 
-        <button
-              type="submit"
-              onClick={() => console.log("SUBMIT BUTTON CLICKED")}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#1E4D38] hover:bg-[#163B2A] text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
-            >
-              <Send className="w-3.5 h-3.5" />
-              Submit Problem
-        </button>
+          <button
+            type="submit"
+            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#1E4D38] hover:bg-[#163B2A] text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
+          >
+            <Send className="w-3.5 h-3.5" />
+            Submit Problem
+          </button>
 
         </div>
 
@@ -359,3 +381,4 @@ const handleAutoDetect = async () => {
     </div>
   );
 }
+

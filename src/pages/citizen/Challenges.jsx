@@ -1,8 +1,8 @@
 
 import React, { useEffect, useMemo, useState } from "react";
-
 import { useNavigate } from "react-router-dom";
 import { getAllChallenges } from "../../api/challengeApi";
+
 import {
   Search,
   MapPin,
@@ -14,19 +14,21 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-   
-
-   export default function Challenges() {
+export default function Challenges() {
   const navigate = useNavigate();
 
   const [problems, setProblems] = useState([]);
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("All");
+  const [status, setStatus] = useState("All");
 
+  // Fetch challenges from backend
   useEffect(() => {
     const fetchChallenges = async () => {
       try {
         const response = await getAllChallenges();
 
-      
+        console.log("Challenges from backend:", response);
 
         setProblems(response.list || []);
       } catch (error) {
@@ -40,11 +42,7 @@ import {
     fetchChallenges();
   }, []);
 
-
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("All");
-  const [status, setStatus] = useState("All");
-
+  // Get categories dynamically
   const categories = useMemo(() => {
     const values = problems
       .map((problem) => problem.category)
@@ -53,6 +51,7 @@ import {
     return ["All", ...new Set(values)];
   }, [problems]);
 
+  // Filter challenges
   const filteredProblems = useMemo(() => {
     return problems.filter((problem) => {
       const title = problem.title || "";
@@ -72,6 +71,7 @@ import {
     });
   }, [problems, search, category, status]);
 
+  // Status styling
   const getStatusStyle = (problemStatus) => {
     if (problemStatus === "Resolved") {
       return "bg-[#ECFDF5] text-[#047857] border-[#A7F3D0]";
@@ -87,6 +87,7 @@ import {
     return "bg-[#FEF2F2] text-[#B91C1C] border-[#FECACA]";
   };
 
+  // Status icon
   const getStatusIcon = (problemStatus) => {
     if (problemStatus === "Resolved") {
       return <CheckCircle2 className="w-3.5 h-3.5" />;
@@ -105,7 +106,7 @@ import {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
 
-      {/* ================= HEADER ================= */}
+      {/* HEADER */}
       <div className="bg-white rounded-3xl border border-[#E5E0D2] shadow-xs p-6 mb-6">
 
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-5">
@@ -135,12 +136,11 @@ import {
 
         </div>
 
-
-        {/* ================= FILTERS ================= */}
+        {/* FILTERS */}
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-3">
 
           {/* Search */}
-          <div className="relative md:col-span-1">
+          <div className="relative">
 
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8]" />
 
@@ -152,7 +152,6 @@ import {
             />
 
           </div>
-
 
           {/* Category */}
           <div className="relative">
@@ -173,7 +172,6 @@ import {
 
           </div>
 
-
           {/* Status */}
           <select
             value={status}
@@ -188,11 +186,9 @@ import {
           </select>
 
         </div>
-
       </div>
 
-
-      {/* ================= RESULT COUNT ================= */}
+      {/* RESULT COUNT */}
       <div className="flex items-center justify-between mb-3 px-1">
 
         <p className="text-xs font-semibold text-[#64748B]">
@@ -209,8 +205,7 @@ import {
 
       </div>
 
-
-      {/* ================= CARDS ================= */}
+      {/* CHALLENGES */}
       {filteredProblems.length === 0 ? (
 
         <div className="bg-white rounded-3xl border border-[#E5E0D2] p-12 text-center">
@@ -240,22 +235,14 @@ import {
               className="bg-white rounded-3xl border border-[#E5E0D2] shadow-xs overflow-hidden hover:shadow-md transition-shadow"
             >
 
-              {/* Image */}
-<<<<<<< HEAD
+              {/* IMAGE */}
               {problem.media?.[0]?.url ? (
-=======
-              {problem.evidenceImages?.[0] ? (
->>>>>>> 6ec88e5198d1a2ef8b1ec92deff7d7bbff8994b1
 
                 <div className="h-40 overflow-hidden bg-[#F4F1E8]">
 
                   <img
-<<<<<<< HEAD
                     src={problem.media[0].url}
-=======
-                    src={problem.evidenceImages[0]}
->>>>>>> 6ec88e5198d1a2ef8b1ec92deff7d7bbff8994b1
-                    alt={problem.title}
+                    alt={problem.title || "Challenge"}
                     className="w-full h-full object-cover"
                   />
 
@@ -269,10 +256,9 @@ import {
 
               )}
 
-
               <div className="p-5">
 
-                {/* Status */}
+                {/* STATUS */}
                 <div className="flex items-center justify-between gap-2 mb-3">
 
                   <span
@@ -292,21 +278,18 @@ import {
 
                 </div>
 
-
-                {/* Title */}
+                {/* TITLE */}
                 <h2 className="text-base font-bold text-[#1C241E] font-editorial leading-snug line-clamp-2">
                   {problem.title || "Untitled Challenge"}
                 </h2>
 
-
-                {/* Description */}
+                {/* DESCRIPTION */}
                 <p className="text-xs text-[#64748B] leading-relaxed mt-2 line-clamp-3">
                   {problem.description ||
                     "A community problem that needs attention and a practical solution."}
                 </p>
 
-
-                {/* Meta */}
+                {/* META */}
                 <div className="mt-4 pt-3 border-t border-[#F0EBE0] space-y-2">
 
                   <div className="flex items-center gap-1.5 text-[11px] text-[#64748B]">
@@ -320,7 +303,6 @@ import {
                     </span>
 
                   </div>
-
 
                   <div className="flex items-center gap-1.5 text-[11px] text-[#64748B]">
 
@@ -337,8 +319,7 @@ import {
 
                 </div>
 
-
-                {/* Action */}
+                {/* ACTION */}
                 <button
                   onClick={() =>
                     navigate(
@@ -366,3 +347,4 @@ import {
     </div>
   );
 }
+
