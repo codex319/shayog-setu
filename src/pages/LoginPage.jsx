@@ -13,8 +13,7 @@ import { useAuth, homeRouteForRole } from "../context/AuthContext.jsx";
 const roles = [
   { value: "citizen", label: "Citizen" },
   { value: "government", label: "Government Officer" },
-  { value: "university", label: "University Admin" },
-  { value: "faculty", label: "Faculty" },
+  
   { value: "student", label: "Student" },
   { value: "industry", label: "Industry / Startup / CSR" },
   { value: "admin", label: "System Admin" },

@@ -1,8 +1,5 @@
-
-import React, { useEffect, useMemo, useState } from "react";
-
+import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAllChallenges } from "../../api/challengeApi";
 import {
   Search,
   MapPin,
@@ -12,49 +9,61 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
+  Plus,
 } from "lucide-react";
 
-   
+import { useProblems } from "../../context/ProblemsContext.jsx";
+// CHANGE THIS IMPORT if your auth context has a different path/name
+import { useAuth } from "../../context/AuthContext.jsx";
 
-   export default function Challenges() {
+export default function MyChallenges() {
   const navigate = useNavigate();
-
-  const [problems, setProblems] = useState([]);
-
-  useEffect(() => {
-    const fetchChallenges = async () => {
-      try {
-        const response = await getAllChallenges();
-
-      
-
-        setProblems(response.list || []);
-      } catch (error) {
-        console.error(
-          "Failed to fetch challenges:",
-          error.response?.data || error.message
-        );
-      }
-    };
-
-    fetchChallenges();
-  }, []);
-
+  const { problems = [] } = useProblems();
+  const { user } = useAuth();
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [status, setStatus] = useState("All");
 
+  /*
+   * Get the currently logged-in user's ID.
+   */
+  const currentUserId = user?.id || user?._id;
+
+  /*
+   * Only show challenges created by the logged-in user.
+   *
+   * IMPORTANT:
+   * If your problem object uses a different field for the creator,
+   * change the creator checks below.
+   */
+  const myProblems = useMemo(() => {
+    if (!currentUserId) return [];
+
+    return problems.filter((problem) => {
+      const creatorId =
+        problem.userId ||
+        problem.user?._id ||
+        problem.user?.id ||
+        problem.createdBy?._id ||
+        problem.createdBy?.id ||
+        problem.author?._id ||
+        problem.author?.id;
+
+      return String(creatorId) === String(currentUserId);
+    });
+  }, [problems, currentUserId]);
+
   const categories = useMemo(() => {
-    const values = problems
+    const values = myProblems
       .map((problem) => problem.category)
       .filter(Boolean);
 
     return ["All", ...new Set(values)];
-  }, [problems]);
+  }, [myProblems]);
 
   const filteredProblems = useMemo(() => {
-    return problems.filter((problem) => {
+    return myProblems.filter((problem) => {
       const title = problem.title || "";
       const description = problem.description || "";
 
@@ -70,7 +79,7 @@ import {
 
       return matchesSearch && matchesCategory && matchesStatus;
     });
-  }, [problems, search, category, status]);
+  }, [myProblems, search, category, status]);
 
   const getStatusStyle = (problemStatus) => {
     if (problemStatus === "Resolved") {
@@ -116,12 +125,12 @@ import {
             </span>
 
             <h1 className="text-2xl sm:text-3xl font-bold text-[#1C241E] font-editorial mt-1">
-              Community Challenges
+              My Challenges
             </h1>
 
             <p className="text-sm text-[#64748B] mt-1 max-w-2xl">
-              Explore problems reported by citizens and discover challenges
-              that need community-driven solutions.
+              Track the problems you have reported and follow their progress
+              toward community-driven solutions.
             </p>
           </div>
 
@@ -129,30 +138,28 @@ import {
             onClick={() => navigate("/citizen/challenges/new")}
             className="bg-[#1E4D38] hover:bg-[#163B2A] text-white text-xs font-bold px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
           >
+            <Plus className="w-3.5 h-3.5" />
             Report a Problem
-            <ArrowRight className="w-3.5 h-3.5" />
           </button>
 
         </div>
-
 
         {/* ================= FILTERS ================= */}
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-3">
 
           {/* Search */}
-          <div className="relative md:col-span-1">
+          <div className="relative">
 
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8]" />
 
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search challenges..."
+              placeholder="Search my challenges..."
               className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-[#FAF8F2] border border-[#DDD6C5] text-xs outline-none focus:ring-2 focus:ring-[#1E4D38]/20"
             />
 
           </div>
-
 
           {/* Category */}
           <div className="relative">
@@ -173,7 +180,6 @@ import {
 
           </div>
 
-
           {/* Status */}
           <select
             value={status}
@@ -188,9 +194,7 @@ import {
           </select>
 
         </div>
-
       </div>
-
 
       {/* ================= RESULT COUNT ================= */}
       <div className="flex items-center justify-between mb-3 px-1">
@@ -200,19 +204,44 @@ import {
           <span className="text-[#1C241E]">
             {filteredProblems.length}
           </span>{" "}
-          challenges
+          of your challenges
         </p>
 
         <span className="text-[10px] text-[#94A3B8]">
-          Community problems
+          My reported problems
         </span>
 
       </div>
 
+      {/* ================= NOT LOGGED IN ================= */}
+      {!user ? (
 
-      {/* ================= CARDS ================= */}
-      {filteredProblems.length === 0 ? (
+        <div className="bg-white rounded-3xl border border-[#E5E0D2] p-12 text-center">
 
+          <div className="w-12 h-12 rounded-full bg-[#F4F1E8] mx-auto flex items-center justify-center mb-3">
+            <AlertCircle className="w-5 h-5 text-[#1E4D38]" />
+          </div>
+
+          <h2 className="text-lg font-bold text-[#1C241E] font-editorial">
+            Login Required
+          </h2>
+
+          <p className="text-xs text-[#64748B] mt-1">
+            Please login to view the challenges you have reported.
+          </p>
+
+          <button
+            onClick={() => navigate("/login")}
+            className="mt-5 bg-[#1E4D38] hover:bg-[#163B2A] text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-colors cursor-pointer"
+          >
+            Login
+          </button>
+
+        </div>
+
+      ) : filteredProblems.length === 0 ? (
+
+        /* ================= EMPTY STATE ================= */
         <div className="bg-white rounded-3xl border border-[#E5E0D2] p-12 text-center">
 
           <div className="w-12 h-12 rounded-full bg-[#F4F1E8] mx-auto flex items-center justify-center mb-3">
@@ -224,13 +253,22 @@ import {
           </h2>
 
           <p className="text-xs text-[#64748B] mt-1">
-            Try changing your search or filters.
+            You haven't reported any challenges matching these filters.
           </p>
+
+          <button
+            onClick={() => navigate("/citizen/challenges/new")}
+            className="mt-5 bg-[#1E4D38] hover:bg-[#163B2A] text-white text-xs font-bold px-5 py-2.5 rounded-xl inline-flex items-center gap-2 transition-colors cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Report a Problem
+          </button>
 
         </div>
 
       ) : (
 
+        /* ================= CARDS ================= */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
 
           {filteredProblems.map((problem) => (
@@ -241,20 +279,12 @@ import {
             >
 
               {/* Image */}
-<<<<<<< HEAD
-              {problem.media?.[0]?.url ? (
-=======
               {problem.evidenceImages?.[0] ? (
->>>>>>> 6ec88e5198d1a2ef8b1ec92deff7d7bbff8994b1
 
                 <div className="h-40 overflow-hidden bg-[#F4F1E8]">
 
                   <img
-<<<<<<< HEAD
-                    src={problem.media[0].url}
-=======
                     src={problem.evidenceImages[0]}
->>>>>>> 6ec88e5198d1a2ef8b1ec92deff7d7bbff8994b1
                     alt={problem.title}
                     className="w-full h-full object-cover"
                   />
@@ -268,7 +298,6 @@ import {
                 </div>
 
               )}
-
 
               <div className="p-5">
 
@@ -292,19 +321,16 @@ import {
 
                 </div>
 
-
                 {/* Title */}
                 <h2 className="text-base font-bold text-[#1C241E] font-editorial leading-snug line-clamp-2">
                   {problem.title || "Untitled Challenge"}
                 </h2>
 
-
                 {/* Description */}
                 <p className="text-xs text-[#64748B] leading-relaxed mt-2 line-clamp-3">
                   {problem.description ||
-                    "A community problem that needs attention and a practical solution."}
+                    "A community problem that you reported."}
                 </p>
-
 
                 {/* Meta */}
                 <div className="mt-4 pt-3 border-t border-[#F0EBE0] space-y-2">
@@ -316,11 +342,10 @@ import {
                     <span>
                       {problem.district ||
                         problem.location ||
-                        "Jharkhand"}
+                        "Location not specified"}
                     </span>
 
                   </div>
-
 
                   <div className="flex items-center gap-1.5 text-[11px] text-[#64748B]">
 
@@ -336,7 +361,6 @@ import {
                   </div>
 
                 </div>
-
 
                 {/* Action */}
                 <button
