@@ -13,7 +13,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 
-import { getOneChallenge } from "../../api/challengeApi";  
+import { getOneChallenge } from "../../api/challengeApi";
 
 export default function ChallengeDetail() {
   const { id } = useParams();
