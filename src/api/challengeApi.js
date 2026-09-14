@@ -1,8 +1,6 @@
 
 import axios from "axios";
 
-
-
 const createChallenge = async (payload, image) => {
   const formData = new FormData();
 
@@ -21,19 +19,24 @@ const createChallenge = async (payload, image) => {
     formData
   );
 
+  return res.data;
+};
+
+export const getAllChallenges = async () => {
+  const res = await axios.get(
+    "http://localhost:3000/api/challenges"
+  );
 
   return res.data;
 };
 
-
-
-
-export const getAllChallenges = async () => {
-  const res = await axios.get("http://localhost:3000/api/challenges");
+export const getOneChallenge = async (id) => {
+  const res = await axios.get(
+    `http://localhost:3000/api/challenges/${id}`
+  );
 
   return res.data;
 };
 
 export default createChallenge;
-
 

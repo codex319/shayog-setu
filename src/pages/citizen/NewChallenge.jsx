@@ -1,6 +1,7 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import createChallenge from "../../api/challengeApi";
 
 
 import {
@@ -197,7 +198,7 @@ export default function NewChallenge() {
 
               </div>
 
-              <select
+             <select
                 name="category"
                 value={form.category}
                 onChange={handleChange}
@@ -205,32 +206,30 @@ export default function NewChallenge() {
                 className="w-full px-3.5 py-3 rounded-xl bg-[#FAF8F2] border border-[#DDD6C5] text-sm outline-none cursor-pointer focus:border-[#1E4D38]"
               >
                 <option value="">Select category</option>
-                <option value="Water Quality & Sanitation">
+                <option value="Water & Sanitation">
                   Water Quality & Sanitation
                 </option>
-                <option value="Air & Environmental Pollution">
-                  Air & Environmental Pollution
+                <option value="Roads & Transport">
+                  Roads & Transport
                 </option>
-                <option value="Public Health">
-                  Public Health
+                <option value="Electricity">
+                  Electricity
                 </option>
-                <option value="Infrastructure & Roads">
-                  Infrastructure & Roads
+                <option value="Healthcare">
+                  Healthcare
                 </option>
                 <option value="Education">
                   Education
                 </option>
-                <option value="Energy & Sustainability">
-                  Energy & Sustainability
+                <option value="Enviroment">
+                  Enviroment
                 </option>
-                <option value="Waste Management">
-                  Waste Management
+                <option value="Public Safety">
+                  Public Safety
                 </option>
-                <option value="Agriculture & Rural Development">
-                  Agriculture & Rural Development
-                </option>
-                <option value="Safety & Public Welfare">
-                  Safety & Public Welfare
+               
+                <option value="Other">
+                  Other
                 </option>
               </select>
 
