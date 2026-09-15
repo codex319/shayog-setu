@@ -26,6 +26,10 @@ import UniversityLayout from "./layouts/UniversityLayout.jsx";
 import UniversityDashboard from "./pages/university/Dashboard.jsx";
 import UniversityChallenges from "./pages/university/Challenges.jsx";
 
+import StudentLayout from "./layouts/StudentLayout.jsx";
+import StudentDashboard from "./pages/student/Dashboard.jsx";
+import StudentChallenges from "./pages/student/Challenges.jsx";
+
 import IndustryLayout from "./layouts/IndustryLayout.jsx";
 import IndustryDashboard from "./pages/industry/Dashboard.jsx";
 import IndustryChallenges from "./pages/industry/Challenges.jsx";
@@ -73,13 +77,25 @@ export default function App() {
       <Route
         path="/university"
         element={
-          <ProtectedRoute allowedRoles={["university", "faculty", "student"]}>
+          <ProtectedRoute allowedRoles={["university"]}>
             <UniversityLayout />
           </ProtectedRoute>
         }
       >
         <Route path="dashboard" element={<UniversityDashboard />} />
         <Route path="challenges" element={<UniversityChallenges />} />
+      </Route>
+
+       <Route
+        path="/student"
+        element={
+          <ProtectedRoute allowedRoles={["faculty", "student"]}>
+            <StudentLayout />
+          </ProtectedRoute>
+        }
+      >
+         <Route path="dashboard" element={<StudentDashboard />} />
+        <Route path="challenges" element={<StudentChallenges />} />
       </Route>
 
       <Route

@@ -16,6 +16,7 @@ const roles = [
   { value: "citizen", label: "Citizen" },
   { value: "government", label: "Government Officer" },
   { value: "student", label: "Student/Faculty" },
+   { value: "university", label: "University" },
   { value: "industry", label: "Industry / Startup / CSR" },
 ];
 

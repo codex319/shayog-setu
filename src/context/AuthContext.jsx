@@ -15,8 +15,8 @@ const roleHomeMap = {
   citizen: "/citizen/dashboard",
   government: "/government/dashboard",
   university: "/university/dashboard",
-  faculty: "/university/dashboard",
-  student: "/university/dashboard",
+  faculty: "/student/dashboard",
+  student: "/student/dashboard",
   industry: "/industry/dashboard",
   admin: "/admin/dashboard",
 };
