@@ -53,3 +53,26 @@ export const rejectChallenge = async (id, remarks = "") => {
 
   return res.data;
 };
+
+// ========================================
+// GET ALL UNIVERSITIES
+// ========================================
+export const getAllUniversities = async () => {
+  const res = await axios.get("http://localhost:3000/api/universities");
+
+  return res.data;
+};
+
+// ========================================
+// ASSIGN CHALLENGE TO UNIVERSITY
+// ========================================
+export const assignChallenge = async (id, universityId) => {
+  const res = await axios.post(
+    `${API_URL}/challenges/${id}/assign`,
+    {
+      universityId,
+    }
+  );
+
+  return res.data;
+};

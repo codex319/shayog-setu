@@ -5,11 +5,17 @@ import {
   MapPin,
   Download,
   ArrowRight,
+  Building2,
+  CheckCircle2,
+  Loader2,
+  X,
 } from "lucide-react";
 
 import {
   getGovernmentDashboardStats,
   getGovernmentChallenges,
+  getAllUniversities,
+  assignChallenge,
 } from "../../api/governmentApi";
 
 export default function GovernmentDashboard() {
@@ -34,9 +40,21 @@ export default function GovernmentDashboard() {
   const [underVerificationChallenges, setUnderVerificationChallenges] =
     useState([]);
   const [verifiedChallenges, setVerifiedChallenges] = useState([]);
+  const [assignedChallenges, setAssignedChallenges] = useState([]);
 
   const [loadingChallenges, setLoadingChallenges] = useState(true);
   const [challengeError, setChallengeError] = useState("");
+
+  // ================= UNIVERSITY ASSIGNMENT =================
+
+  const [universities, setUniversities] = useState([]);
+  const [loadingUniversities, setLoadingUniversities] = useState(false);
+
+  const [assigningChallengeId, setAssigningChallengeId] = useState(null);
+  const [selectedUniversity, setSelectedUniversity] = useState("");
+
+  const [assignmentError, setAssignmentError] = useState("");
+  const [assignmentSuccess, setAssignmentSuccess] = useState("");
 
   // ================= FETCH DASHBOARD STATS =================
 
@@ -55,9 +73,7 @@ export default function GovernmentDashboard() {
           error
         );
 
-        setStatsError(
-          "Unable to load live dashboard statistics."
-        );
+        setStatsError("Unable to load live dashboard statistics.");
       } finally {
         setLoadingStats(false);
       }
@@ -68,56 +84,158 @@ export default function GovernmentDashboard() {
 
   // ================= FETCH CHALLENGES =================
 
+  const fetchGovernmentChallenges = async () => {
+    try {
+      setLoadingChallenges(true);
+      setChallengeError("");
+
+      const pendingResponse = await getGovernmentChallenges({
+        status: "SUBMITTED",
+      });
+
+      const verificationResponse = await getGovernmentChallenges({
+        status: "UNDER_VERIFICATION",
+      });
+
+      const verifiedResponse = await getGovernmentChallenges({
+        status: "VERIFIED",
+      });
+
+      const assignedResponse = await getGovernmentChallenges({
+        status: "ASSIGNED",
+      });
+
+      setPendingChallenges(pendingResponse.list || []);
+
+      setUnderVerificationChallenges(
+        verificationResponse.list || []
+      );
+
+      setVerifiedChallenges(
+        verifiedResponse.list || []
+      );
+
+      setAssignedChallenges(
+        assignedResponse.list || []
+      );
+    } catch (error) {
+      console.error(
+        "Failed to load government challenges:",
+        error
+      );
+
+      setChallengeError(
+        "Unable to load government challenges."
+      );
+    } finally {
+      setLoadingChallenges(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchGovernmentChallenges = async () => {
-      try {
-        setLoadingChallenges(true);
-        setChallengeError("");
-
-        // Pending challenges
-        const pendingResponse = await getGovernmentChallenges({
-          status: "SUBMITTED",
-        });
-
-        // Under verification challenges
-        const verificationResponse =
-          await getGovernmentChallenges({
-            status: "UNDER_VERIFICATION",
-          });
-
-        // Verified challenges
-        const verifiedResponse =
-          await getGovernmentChallenges({
-            status: "VERIFIED",
-          });
-
-        setPendingChallenges(
-          pendingResponse.list || []
-        );
-
-        setUnderVerificationChallenges(
-          verificationResponse.list || []
-        );
-
-        setVerifiedChallenges(
-          verifiedResponse.list || []
-        );
-      } catch (error) {
-        console.error(
-          "Failed to load government challenges:",
-          error
-        );
-
-        setChallengeError(
-          "Unable to load government challenges."
-        );
-      } finally {
-        setLoadingChallenges(false);
-      }
-    };
-
     fetchGovernmentChallenges();
   }, []);
+
+  // ================= LOAD UNIVERSITIES =================
+
+  const loadUniversities = async () => {
+    try {
+      setLoadingUniversities(true);
+      setAssignmentError("");
+
+      const response = await getAllUniversities();
+
+      setUniversities(response.list || []);
+    } catch (error) {
+      console.error(
+        "Failed to load universities:",
+        error
+      );
+
+      setAssignmentError(
+        "Unable to load universities."
+      );
+    } finally {
+      setLoadingUniversities(false);
+    }
+  };
+
+  // ================= OPEN ASSIGN MODAL =================
+
+  const handleOpenAssign = async (challenge) => {
+    setAssignmentError("");
+    setAssignmentSuccess("");
+    setSelectedUniversity("");
+
+    setAssigningChallengeId(challenge._id);
+
+    if (universities.length === 0) {
+      await loadUniversities();
+    }
+  };
+
+  // ================= CLOSE ASSIGN MODAL =================
+
+  const handleCloseAssign = () => {
+    setAssigningChallengeId(null);
+    setSelectedUniversity("");
+    setAssignmentError("");
+  };
+
+  // ================= ASSIGN UNIVERSITY =================
+
+  const handleAssignUniversity = async () => {
+    if (!selectedUniversity) {
+      setAssignmentError("Please select a university.");
+      return;
+    }
+
+    try {
+      setAssignmentError("");
+      setAssignmentSuccess("");
+
+      await assignChallenge(
+        assigningChallengeId,
+        selectedUniversity
+      );
+
+      setAssignmentSuccess(
+        "Challenge assigned to university successfully."
+      );
+
+      setTimeout(async () => {
+        setAssigningChallengeId(null);
+        setSelectedUniversity("");
+        setAssignmentSuccess("");
+
+        await fetchGovernmentChallenges();
+
+        try {
+          const statsResponse =
+            await getGovernmentDashboardStats();
+
+          setDashboardStats(
+            statsResponse.stats
+          );
+        } catch (error) {
+          console.error(
+            "Failed to refresh dashboard stats:",
+            error
+          );
+        }
+      }, 1000);
+    } catch (error) {
+      console.error(
+        "Failed to assign challenge:",
+        error
+      );
+
+      setAssignmentError(
+        error?.response?.data?.message ||
+          "Failed to assign challenge. Please try again."
+      );
+    }
+  };
 
   // ================= METRICS =================
 
@@ -183,9 +301,7 @@ export default function GovernmentDashboard() {
 
         <button
           onClick={() =>
-            alert(
-              "Export feature will be connected later."
-            )
+            alert("Export feature will be connected later.")
           }
           className="px-3 py-2 rounded-xl bg-[#FAF8F2] border border-[#DDD6C5] text-xs font-bold text-[#475569] hover:bg-[#F2ECE1] flex items-center gap-1.5 cursor-pointer self-start"
         >
@@ -261,6 +377,14 @@ export default function GovernmentDashboard() {
         </div>
       )}
 
+      {/* ================= ASSIGNMENT ERROR ================= */}
+
+      {assignmentError && !assigningChallengeId && (
+        <div className="bg-rose-50 border border-rose-200 text-rose-700 rounded-xl px-4 py-3 text-xs font-semibold">
+          {assignmentError}
+        </div>
+      )}
+
       {/* ================= VERIFICATION QUEUE ================= */}
 
       <ChallengeSection
@@ -315,8 +439,189 @@ export default function GovernmentDashboard() {
         emptyTitle="No verified challenges"
         emptyDescription="Verified challenges will appear here."
         showReview={false}
+        showAssign={true}
+        navigate={navigate}
+        onAssign={handleOpenAssign}
+      />
+
+      {/* ================= ASSIGNED ================= */}
+
+      <ChallengeSection
+        title="Assigned Challenges"
+        description="Challenges assigned to universities for solution development."
+        badge={
+          loadingChallenges
+            ? "Loading..."
+            : `${assignedChallenges.length} Assigned`
+        }
+        badgeClass="text-blue-800 bg-blue-50 border-blue-200"
+        challenges={assignedChallenges}
+        loading={loadingChallenges}
+        emptyTitle="No assigned challenges"
+        emptyDescription="Verified challenges assigned to universities will appear here."
+        showReview={false}
+        showAssign={false}
+        showDetails={true}
         navigate={navigate}
       />
+
+      {/* ================= ASSIGN UNIVERSITY MODAL ================= */}
+
+      {assigningChallengeId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+
+          <div className="w-full max-w-md bg-white rounded-3xl border border-[#E5E0D2] shadow-2xl p-6">
+
+            {/* Modal Header */}
+
+            <div className="flex items-start justify-between gap-4 mb-6">
+
+              <div className="flex items-center gap-3">
+
+                <div className="w-11 h-11 rounded-xl bg-[#EBF3EE] flex items-center justify-center">
+                  <Building2 className="w-5 h-5 text-[#1E4D38]" />
+                </div>
+
+                <div>
+                  <h2 className="text-lg font-bold text-[#1C241E]">
+                    Assign University
+                  </h2>
+
+                  <p className="text-xs text-[#64748B] mt-1">
+                    Select a university for this verified challenge.
+                  </p>
+                </div>
+
+              </div>
+
+              <button
+                type="button"
+                onClick={handleCloseAssign}
+                className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[#F2ECE1] text-[#64748B]"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+            </div>
+
+            {/* Error */}
+
+            {assignmentError && (
+              <div className="mb-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl px-4 py-3 text-xs font-semibold">
+                {assignmentError}
+              </div>
+            )}
+
+            {/* Success */}
+
+            {assignmentSuccess && (
+              <div className="mb-4 bg-green-50 border border-green-200 text-green-700 rounded-xl px-4 py-3 text-xs font-semibold flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4" />
+                {assignmentSuccess}
+              </div>
+            )}
+
+            {/* University Select */}
+
+            <div>
+
+              <label
+                htmlFor="university"
+                className="block text-sm font-semibold text-[#1C241E] mb-2"
+              >
+                Select University
+              </label>
+
+              {loadingUniversities ? (
+
+                <div className="w-full rounded-xl border border-[#E5E0D2] bg-[#FCFBF7] px-4 py-3 flex items-center gap-2 text-sm text-[#64748B]">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Loading universities...
+                </div>
+
+              ) : (
+
+                <select
+                  id="university"
+                  value={selectedUniversity}
+                  onChange={(e) =>
+                    setSelectedUniversity(e.target.value)
+                  }
+                  disabled={!!assignmentSuccess}
+                  className="w-full rounded-xl border border-[#E5E0D2] bg-[#FCFBF7] px-4 py-3 text-sm text-[#1C241E] outline-none focus:border-[#1E4D38] focus:ring-2 focus:ring-[#EBF3EE]"
+                >
+
+                  <option value="">
+                    -- Select University --
+                  </option>
+
+                  {universities.map((university) => (
+
+                    <option
+                      key={university._id}
+                      value={university._id}
+                    >
+                      {university.name} ({university.code})
+                    </option>
+
+                  ))}
+
+                </select>
+
+              )}
+
+            </div>
+
+            {/* Buttons */}
+
+            <div className="flex justify-end gap-3 mt-6">
+
+              <button
+                type="button"
+                onClick={handleCloseAssign}
+                disabled={!!assignmentSuccess}
+                className="px-4 py-2.5 rounded-xl border border-[#E5E0D2] bg-[#FAF8F2] text-sm font-semibold text-[#475569] hover:bg-[#F2ECE1]"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleAssignUniversity}
+                disabled={
+                  !selectedUniversity ||
+                  loadingUniversities ||
+                  !!assignmentSuccess
+                }
+                className={`px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 ${
+                  !selectedUniversity ||
+                  loadingUniversities ||
+                  !!assignmentSuccess
+                    ? "bg-[#CBD5D1] text-[#64748B] cursor-not-allowed"
+                    : "bg-[#1E4D38] text-white hover:bg-[#163B2A]"
+                }`}
+              >
+
+                {assignmentSuccess ? (
+                  <>
+                    <CheckCircle2 className="w-4 h-4" />
+                    Assigned
+                  </>
+                ) : (
+                  <>
+                    <Building2 className="w-4 h-4" />
+                    Assign
+                  </>
+                )}
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+      )}
 
     </div>
   );
@@ -337,7 +642,10 @@ function ChallengeSection({
   emptyTitle,
   emptyDescription,
   showReview,
+  showAssign,
+  showDetails,
   navigate,
+  onAssign,
 }) {
   return (
     <div className="bg-white rounded-3xl border border-[#E5E0D2] p-5 shadow-xs">
@@ -365,7 +673,6 @@ function ChallengeSection({
         </span>
 
       </div>
-
 
       {/* LOADING */}
 
@@ -436,13 +743,11 @@ function ChallengeSection({
 
               </div>
 
-
               {/* CATEGORY */}
 
               <span className="w-fit max-w-full px-2 py-1 rounded-md bg-[#EBF3EE] text-[#1E4D38] text-[9px] font-bold mb-3 truncate">
                 {challenge.category}
               </span>
-
 
               {/* TITLE */}
 
@@ -450,13 +755,11 @@ function ChallengeSection({
                 {challenge.title}
               </h3>
 
-
               {/* DESCRIPTION */}
 
               <p className="text-[11px] text-[#64748B] mt-2 leading-relaxed line-clamp-3">
                 {challenge.description}
               </p>
-
 
               {/* LOCATION */}
 
@@ -465,15 +768,30 @@ function ChallengeSection({
                 <MapPin className="w-3.5 h-3.5 text-amber-700 flex-shrink-0 mt-0.5" />
 
                 <span className="line-clamp-2">
+
                   {challenge.district}
 
                   {challenge.location
                     ? ` • ${challenge.location}`
                     : ""}
+
                 </span>
 
               </div>
 
+              {/* ASSIGNED UNIVERSITY */}
+
+              {challenge.assignedUniversity && (
+                <div className="flex items-center gap-1.5 mt-3 text-[10px] text-[#1E4D38] font-semibold">
+
+                  <Building2 className="w-3.5 h-3.5 flex-shrink-0" />
+
+                  <span className="truncate">
+                    University Assigned
+                  </span>
+
+                </div>
+              )}
 
               {/* BOTTOM */}
 
@@ -490,6 +808,8 @@ function ChallengeSection({
                         ).toLocaleDateString()
                       : ""}
                   </span>
+
+                  {/* REVIEW BUTTON */}
 
                   {showReview && (
                     <button
@@ -515,6 +835,62 @@ function ChallengeSection({
                       "
                     >
                       Review
+                      <ArrowRight className="w-3 h-3" />
+                    </button>
+                  )}
+
+                  {/* ASSIGN UNIVERSITY BUTTON */}
+
+                  {showAssign && (
+                    <button
+                      onClick={() => onAssign(challenge)}
+                      className="
+                        px-3
+                        py-1.5
+                        rounded-lg
+                        bg-[#1E40AF]
+                        hover:bg-[#1E3A8A]
+                        text-white
+                        text-[10px]
+                        font-bold
+                        flex
+                        items-center
+                        gap-1
+                        transition-colors
+                        cursor-pointer
+                      "
+                    >
+                      <Building2 className="w-3 h-3" />
+                      Assign University
+                    </button>
+                  )}
+
+                  {/* VIEW DETAILS BUTTON */}
+
+                  {showDetails && (
+                    <button
+                      onClick={() =>
+                        navigate(
+                          `/government/challenges/${challenge._id}/review`
+                        )
+                      }
+                      className="
+                        px-3
+                        py-1.5
+                        rounded-lg
+                        bg-[#1E4D38]
+                        hover:bg-[#163B2A]
+                        text-white
+                        text-[10px]
+                        font-bold
+                        flex
+                        items-center
+                        gap-1
+                        transition-colors
+                        cursor-pointer
+                      "
+                    >
+                      View Details
                       <ArrowRight className="w-3 h-3" />
                     </button>
                   )}
